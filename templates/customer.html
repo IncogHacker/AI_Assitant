@@ -1,0 +1,221 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="container">
+  <h1>Talk to AI Assistant 🤖</h1>
+
+  <!-- Text mode -->
+  <div class="card">
+    <div style="display:flex; gap:10px; align-items:center;">
+      <input type="text" id="question" placeholder="Type your question here..." style="flex:1;" />
+      <button onclick="askAI()">Ask AI</button>
+    </div>
+  </div>
+
+  <!-- Voice mode controls -->
+  <div class="card">
+    <div class="voice-controls">
+      <button id="startBtn" class="btn-mic" onclick="startCall()">🎤 Start Call</button>
+      <button id="stopBtn" class="btn-stop" onclick="endCall()" disabled>🔴 End Call</button>
+    </div>
+
+    <div id="transcriptWrap" class="transcript hidden">
+      <div class="mini-title">Live Transcript</div>
+      <div id="youSaid"><strong>You:</strong> <span id="youText">—</span></div>
+      <div id="aiSaid"><strong>AI:</strong> <span id="aiText">—</span></div>
+    </div>
+  </div>
+
+  <!-- Text response box -->
+  <div class="card" id="responseBox" style="display:none;">
+    <h3>AI Response:</h3>
+    <p id="responseText"></p>
+  </div>
+</div>
+
+<script>
+/* ===========================
+   TEXT MODE (already works)
+=========================== */
+function askAI() {
+  const question = document.getElementById("question").value.trim();
+  if (!question) return alert("Please enter a question!");
+
+  fetch("/receive_call", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ question })
+  })
+  .then(res => res.json())
+  .then(data => {
+    document.getElementById("responseText").innerText = data.response;
+    document.getElementById("responseBox").style.display = "block";
+    speakText(data.response); // also speak the reply for a consistent UX
+  })
+  .catch(() => alert("Could not reach server."));
+}
+
+/* ===========================
+   VOICE MODE (Browser STT/TTS)
+   - Uses Web Speech API for speech recognition (offline alternative to LiveKit)
+   - Sends recognized text to /receive_call (same memory flow)
+   - Speaks AI's reply back with a female voice if available
+=========================== */
+
+let recognition = null;
+let listening = false;
+let pendingUtterance = null;
+
+// Choose a female-like voice if present
+function pickFemaleVoice() {
+  const voices = speechSynthesis.getVoices();
+  // Try to find a female/en voice name
+  const pref = voices.find(v =>
+    /female/i.test(v.name) ||
+    /woman/i.test(v.name) ||
+    (/en/i.test(v.lang) && /(Google|Microsoft|Salli|Jenny|Emma|Olivia|Ava|Samantha|Zira)/i.test(v.name))
+  );
+  return pref || voices.find(v => /en/i.test(v.lang)) || voices[0];
+}
+
+function speakText(text) {
+  if (!window.speechSynthesis) return; // safety
+  // Stop any ongoing speech
+  speechSynthesis.cancel();
+  const utt = new SpeechSynthesisUtterance(text);
+  const setVoice = () => {
+    const v = pickFemaleVoice();
+    if (v) utt.voice = v;
+    utt.rate = 1.02;
+    utt.pitch = 1.05; // slightly brighter
+    utt.volume = 1;
+    speechSynthesis.speak(utt);
+  };
+  // Some browsers load voices async
+  if (speechSynthesis.getVoices().length) {
+    setVoice();
+  } else {
+    speechSynthesis.onvoiceschanged = setVoice;
+  }
+}
+
+function setUI(listeningState) {
+  listening = listeningState;
+  document.getElementById("startBtn").disabled = listening;
+  document.getElementById("stopBtn").disabled = !listening;
+  document.getElementById("transcriptWrap").classList.toggle("hidden", !listening);
+  if (!listening) {
+    document.getElementById("youText").innerText = "—";
+    document.getElementById("aiText").innerText = "—";
+  }
+}
+
+function startCall() {
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    alert("Your browser does not support Speech Recognition. Use Chrome/Edge desktop.");
+    return;
+  }
+
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.lang = "en-IN"; // tweak if you want
+  recognition.interimResults = true;
+  recognition.continuous = true;
+
+  let finalBuffer = "";
+
+  recognition.onstart = () => setUI(true);
+
+  recognition.onresult = (event) => {
+    let interim = "";
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      const chunk = event.results[i][0].transcript;
+      if (event.results[i].isFinal) {
+        finalBuffer += (finalBuffer ? " " : "") + chunk;
+      } else {
+        interim += chunk;
+      }
+    }
+    // Show the latest speech live
+    document.getElementById("youText").innerText = (finalBuffer + " " + interim).trim();
+
+    // If a final segment just landed, send it to backend
+    // This keeps the convo flowing turn-by-turn
+    if (finalBuffer && !interim) {
+      sendToAI(finalBuffer);
+      finalBuffer = ""; // reset for next turn
+    }
+  };
+
+  recognition.onerror = (e) => {
+    console.warn("Speech error:", e.error);
+  };
+
+  recognition.onend = () => {
+    // If user didn't press stop and it ended (timeout), restart for continuous feel
+    if (listening) recognition.start();
+  };
+
+  recognition.start();
+}
+
+function endCall() {
+  if (recognition) {
+    try { recognition.stop(); } catch {}
+    recognition = null;
+  }
+  setUI(false);
+}
+
+// Send recognized text to your same backend and speak the reply
+function sendToAI(text) {
+  fetch("/receive_call", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ question: text })
+  })
+  .then(res => res.json())
+  .then(data => {
+    document.getElementById("aiText").innerText = data.response || "";
+    speakText(data.response || "");
+    // Also mirror in the text box area so both modes feel unified
+    document.getElementById("responseText").innerText = data.response || "";
+    document.getElementById("responseBox").style.display = "block";
+  })
+  .catch(() => {
+    document.getElementById("aiText").innerText = "Connection error.";
+  });
+}
+</script>
+
+<style>
+/* Small UI touches for mic controls & transcript */
+.voice-controls {
+  display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+}
+.btn-mic {
+  background: radial-gradient( circle at 30% 30%, #00eaff, #0066ff );
+  box-shadow: 0 0 14px rgba(0,174,255,.7), inset 0 0 10px rgba(255,255,255,.15);
+}
+.btn-mic:disabled { opacity: .6; cursor: not-allowed; }
+
+.btn-stop {
+  background: #ff3b30;
+  box-shadow: 0 0 14px rgba(255,59,48,.6);
+}
+.btn-stop:disabled { opacity: .6; cursor: not-allowed; }
+
+.transcript {
+  margin-top:12px;
+  padding:12px;
+  border-radius:10px;
+  background: rgba(255,255,255,0.10);
+  border:1px solid rgba(255,255,255,0.18);
+}
+.mini-title {
+  font-size: 13px; opacity:.85; margin-bottom:6px;
+}
+.hidden { display:none; }
+</style>
+
+{% endblock %}

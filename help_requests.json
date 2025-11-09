@@ -1,0 +1,37 @@
+[
+    {
+        "id": 1,
+        "question": "hi",
+        "status": "resolved",
+        "created_at": "2025-11-08 15:49:38",
+        "resolved_at": "2025-11-08 16:16:48",
+        "answer": "how can i help You"
+    },
+    {
+        "id": 2,
+        "question": "nothing",
+        "status": "resolved",
+        "created_at": "2025-11-08 16:17:03",
+        "resolved_at": "2025-11-08 16:17:20",
+        "answer": "ok"
+    },
+    {
+        "id": 3,
+        "question": "what are you doing",
+        "status": "unresolved",
+        "created_at": "2025-11-08 17:12:05",
+        "timeout_at": "2025-11-08 18:40:11"
+    },
+    {
+        "id": 4,
+        "question": "3e2",
+        "status": "pending",
+        "created_at": "2025-11-08 21:08:05"
+    },
+    {
+        "id": 5,
+        "question": "hii",
+        "status": "pending",
+        "created_at": "2025-11-08 21:08:14"
+    }
+]

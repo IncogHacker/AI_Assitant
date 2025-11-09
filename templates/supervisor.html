@@ -1,0 +1,97 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="container">
+    <h1>Supervisor Dashboard</h1>
+
+    <!-- ✅ SECTION: Pending -->
+    <div class="section">
+        <div class="section-head" onclick="toggleSection('pendingSection', this)">
+            <span class="arrow open">▼</span> 🟡 Pending Requests
+            <span class="count-badge">{{ pending|length }}</span>
+        </div>
+        <div id="pendingSection" class="section-body open">
+            {% if pending %}
+                {% for req in pending %}
+                <div class="card card-pending">
+                    <div class="card-top">
+                        <span class="pill pill-pending">PENDING</span>
+                        <small class="stamp">Created: {{ req.created_at }}</small>
+                    </div>
+
+                    <div class="qtext">{{ req.question }}</div>
+
+                    <form action="/supervisor/answer" method="post" class="answer-form">
+                        <input type="hidden" name="id" value="{{ req.id }}">
+                        <textarea name="answer" required placeholder="Enter supervisor answer..."></textarea>
+                        <button type="submit">Submit Answer</button>
+                    </form>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="empty-msg">No pending requests 🎉</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ✅ SECTION: Resolved -->
+    <div class="section">
+        <div class="section-head" onclick="toggleSection('resolvedSection', this)">
+            <span class="arrow">▶</span> 🟢 Resolved Requests
+            <span class="count-badge">{{ resolved|length }}</span>
+        </div>
+        <div id="resolvedSection" class="section-body">
+            {% if resolved %}
+                {% for req in resolved %}
+                <div class="card card-resolved">
+                    <div class="card-top">
+                        <span class="pill pill-resolved">RESOLVED</span>
+                        <small class="stamp">Resolved: {{ req.resolved_at }}</small>
+                    </div>
+                    <div class="qtext">{{ req.question }}</div>
+                    <div class="ans"><strong>Answer:</strong> {{ req.answer }}</div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="empty-msg">Nothing resolved yet.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ✅ SECTION: Unresolved -->
+    <div class="section">
+        <div class="section-head" onclick="toggleSection('unresolvedSection', this)">
+            <span class="arrow">▶</span> 🔴 Unresolved Requests
+            <span class="count-badge">{{ unresolved|length }}</span>
+        </div>
+        <div id="unresolvedSection" class="section-body">
+            {% if unresolved %}
+                {% for req in unresolved %}
+                <div class="card card-unresolved">
+                    <div class="card-top">
+                        <span class="pill pill-unresolved">UNRESOLVED</span>
+                        <small class="stamp">Timed Out: {{ req.timeout_at }}</small>
+                    </div>
+                    <div class="qtext">{{ req.question }}</div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="empty-msg">No timed-out requests — great! 🎉</p>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
+<!-- ✅ JAVASCRIPT FOR COLLAPSE TOGGLE -->
+<script>
+function toggleSection(id, header) {
+    const body = document.getElementById(id);
+    const arrow = header.querySelector('.arrow');
+
+    body.classList.toggle("open");
+    arrow.classList.toggle("open");
+}
+</script>
+
+{% endblock %}

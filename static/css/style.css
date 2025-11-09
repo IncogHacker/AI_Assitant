@@ -1,0 +1,259 @@
+/* ===========================
+   GLOBAL RESET & BODY
+=========================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Poppins", Arial, sans-serif;
+    background: linear-gradient(135deg, #0e0637, #2a1b7c, #6d16ff);
+    background-attachment: fixed;
+    background-size: 300% 300%;
+    animation: gradientMove 12s ease infinite;
+    color: #e9e9ff;
+    line-height: 1.6;
+}
+
+/* Smooth gradient animation */
+@keyframes gradientMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* ===========================
+   GLASS NAVBAR
+=========================== */
+nav {
+    backdrop-filter: blur(12px);
+    background: rgba(255,255,255,0.07);
+    border-bottom: 1px solid rgba(255,255,255,0.18);
+    padding: 16px 30px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+nav .nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1100px;
+    margin: auto;
+}
+
+nav h2 {
+    font-weight: 600;
+    font-size: 20px;
+    color: #fff;
+    letter-spacing: .5px;
+    text-shadow: 0 0 6px rgba(255,255,255,.4);
+}
+
+nav a {
+    text-decoration: none;
+    margin-left: 18px;
+    font-size: 15px;
+    color: #dcdcff;
+    font-weight: 500;
+    transition: 0.25s;
+}
+
+nav a:hover {
+    color: #00eaff;
+    text-shadow: 0 0 8px #00eaff;
+}
+
+/* ===========================
+   MAIN CONTAINER (GLASS BOX)
+=========================== */
+main {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 0 15px;
+}
+
+.container {
+    backdrop-filter: blur(14px);
+    background: rgba(255,255,255,0.10);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 14px;
+    padding: 30px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+    margin-bottom: 24px;
+}
+
+/* ===========================
+   HEADINGS
+=========================== */
+h1 {
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 18px;
+    color: #fff;
+    text-shadow: 0 0 12px rgba(255,255,255,.3);
+}
+
+/* ===========================
+   GLASS CARDS
+=========================== */
+.card {
+    backdrop-filter: blur(12px);
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 18px;
+    transition: 0.25s ease;
+}
+
+.card:hover {
+    border-color: #00eaff;
+    box-shadow: 0 0 12px rgba(0,234,255,.6);
+}
+
+/* ===========================
+   FORM ELEMENTS
+=========================== */
+input[type="text"], textarea {
+    width: 100%;
+    padding: 12px;
+    font-size: 15px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.35);
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    outline: none;
+    transition: 0.25s;
+}
+
+input[type="text"]::placeholder,
+textarea::placeholder {
+    color: #c7c7d9;
+}
+
+input:focus, textarea:focus {
+    border-color: #00eaff;
+    box-shadow: 0 0 8px rgba(0,234,255,0.6);
+}
+
+/* ===========================
+   NEON BUTTON
+=========================== */
+button {
+    background: #0f6cff;
+    border: none;
+    padding: 11px 20px;
+    border-radius: 8px;
+    color: white;
+    font-size: 15px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: 0.25s ease;
+    box-shadow: 0 0 8px rgba(0,132,255,0.6);
+    margin-top: 30px;
+}
+
+button:hover {
+    background: #008cff;
+    box-shadow: 0 0 18px rgba(0,181,255,0.9);
+    transform: translateY(-2px);
+}
+
+/* ===========================
+   AI RESPONSE BOX
+=========================== */
+#responseBox {
+    border-left: 5px solid #00eaff;
+    display: none;
+}
+
+/* ===========================
+   EMPTY MESSAGE
+=========================== */
+.empty-msg {
+    opacity: 0.8;
+    text-align: center;
+    font-style: italic;
+    margin: 10px 0;
+}
+
+/* ===========================
+   COLLAPSIBLE SECTION BOXES
+=========================== */
+.section {
+    margin-top: 30px;
+    border-radius: 14px;
+    overflow: hidden;
+    backdrop-filter: blur(12px);
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.18);
+}
+
+.section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 20px;
+    font-size: 17px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.25s ease;
+    color: #fff;
+}
+
+.section-head:hover {
+    background: rgba(255,255,255,0.14);
+}
+
+.count-badge {
+    background: rgba(255,255,255,0.20);
+    padding: 4px 10px;
+    font-size: 12px;
+    border-radius: 999px;
+    font-weight: 600;
+}
+
+.arrow {
+    font-size: 16px;
+    margin-right: 10px;
+    transition: transform 0.25s ease;
+}
+
+.arrow.open {
+    transform: rotate(90deg);
+}
+
+/* COLLAPSIBLE CONTENT */
+.section-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease, padding 0.3s ease;
+    padding: 0 20px;
+}
+
+.section-body.open {
+    max-height: 1200px;
+    padding: 20px;
+}
+
+/* ===========================
+   STATUS COLORS (Card strip)
+=========================== */
+.card-pending { border-left: 5px solid #f4c20d; }
+.card-resolved { border-left: 5px solid #34c759; }
+.card-unresolved { border-left: 5px solid #ff3b30; }
+
+.pill {
+    font-size: 11px;
+    padding: 4px 8px;
+    font-weight: 700;
+    border-radius: 999px;
+}
+
+.pill-pending { background: #fff4cc; color: #8a6d00; }
+.pill-resolved { background: #e7f7ee; color: #126b3f; }
+.pill-unresolved { background: #ffe3e3; color: #9b1c1c; }
